@@ -35,8 +35,19 @@ export default class WeatherMap extends React.Component {
       .then(result => {
         console.log(result);
         this.setState({accessToken: result.value});
-        this._updatePointData({"type":"Point", "coordinates":[0, 0]})
+        
       });
+    fetch("http://localhost:8080/v1/weather/randomLocations/1",
+    {headers: {
+      "Accept": "application/json"
+    }})
+      .then(res => res.json())
+      .then(result => {
+          console.log(result);
+          let {locations} = result;
+          this._updatePointData({"type":"Point", "coordinates":[locations[0].latitude, locations[0].longitude]})
+        }
+      );
 
         
     
@@ -56,12 +67,14 @@ export default class WeatherMap extends React.Component {
     }
     // Update data source
     mapStyle = mapStyle.setIn(['sources', 'point', 'data'], pointData);
-
-    this.setState({mapStyle});
+    this.setState({mapStyle, hasPoints: true});
     console.log("Updated point")
   }
+
+
   render() {
-    if (this.state.accessToken) {
+    //only render the map when we have the access token and points are loaded
+    if (this.state.accessToken && this.state.hasPoints) {
       return (
         <ReactMapGL
           {...this.state.viewport}
@@ -71,7 +84,7 @@ export default class WeatherMap extends React.Component {
         />
       );
     }
-    return null;
+    return (<p>Loading weather data please be patient...</p> );
   }
 }
 
