@@ -66,3 +66,9 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+### Sources
+bootstrapped from https://github.com/facebook/create-react-app
+https://blog.mapbox.com/mapbox-gl-js-react-764da6cc074a
+Secret react keys:
+https://www.rockyourcode.com/secret-keys-in-react
