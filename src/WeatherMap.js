@@ -42,17 +42,22 @@ export default class WeatherMap extends React.Component {
         console.log(err);
         this.setState({error : err})
       });
-    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/weather/randomLocations/1",
+    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/weather/randomLocations/10",
     {headers: {
       "Accept": "application/json"
     }})
       .then(res => res.json())
       .then(result => {
-          console.log(result);
-          let {locations} = result;
-          this._updatePointData({"type":"Point", "coordinates":[locations[0].latitude, locations[0].longitude]})
+        console.log(result);
+        let {locations} = result;
+        let coordinates = [];
+        for (let i = 0; i < locations.length; i++) {
+          coordinates.push({"type":"Feature", 
+          "geometry":{"type":"Point", "coordinates":[locations[i].longitude, locations[i].latitude]}})
         }
-      )
+        console.log(coordinates);
+        this._updatePointData({"type":"FeatureCollection" , "features":coordinates})
+      })
       .catch(err => {
         console.log(err);
         this.setState({error : err})
