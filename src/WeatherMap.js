@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactMapGL from 'react-map-gl';
+import ReactMapGL, {Marker} from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {fromJS} from 'immutable';
 import MAP_STYLE from './react-map-gl-default-style.json';
@@ -31,32 +31,20 @@ export default class WeatherMap extends React.Component {
   }
   componentDidMount() {
     console.log(process.env.REACT_APP_WEATHER_BACKEND_URL);
-    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/mapbox/secret")
-      .then(res => res.json())
-      .then(result => {
-        console.log(result);
-        this.setState({accessToken: result.value});
-        
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({error : err})
-      });
-    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/weather/randomLocations/10",
+    
+    Promise.all([
+      fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/mapbox/secret"),
+      fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/weather/randomLocations/10",
     {headers: {
       "Accept": "application/json"
-    }})
-      .then(res => res.json())
-      .then(result => {
-        console.log(result);
-        let {locations} = result;
-        let coordinates = [];
-        for (let i = 0; i < locations.length; i++) {
-          coordinates.push({"type":"Feature", 
-          "geometry":{"type":"Point", "coordinates":[locations[i].longitude, locations[i].latitude]}})
-        }
-        console.log(coordinates);
-        this._updatePointData({"type":"FeatureCollection" , "features":coordinates})
+    }})])
+    //need to resolve all json first https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
+      .then(responses => Promise.all(responses.map(res => res.json())))
+      .then(([secret, weatherlocations]) => {
+        console.log(weatherlocations);
+        
+        this.setState({accessToken: secret.value, points: weatherlocations.locations});
+        console.log(this.state);
       })
       .catch(err => {
         console.log(err);
@@ -67,35 +55,24 @@ export default class WeatherMap extends React.Component {
     
   };
 
-  
-
-  //https://github.com/uber/react-map-gl/blob/master/examples/geojson-animation/src/app.js
-  _updatePointData = pointData => {
-    let {mapStyle} = this.state;
-    if (!mapStyle.hasIn(['sources', 'point'])) {
-      mapStyle = mapStyle
-        // Add geojson source to map
-        .setIn(['sources', 'point'], fromJS({type: 'geojson'}))
-        // Add point layer to map
-        .set('layers', mapStyle.get('layers').push(this.pointLayer));
-    }
-    // Update data source
-    mapStyle = mapStyle.setIn(['sources', 'point', 'data'], pointData);
-    this.setState({mapStyle, hasPoints: true});
-    console.log("Updated point")
-  }
-
 
   render() {
     //only render the map when we have the access token and points are loaded
-    if (this.state.accessToken && this.state.hasPoints) {
+    if (this.state.accessToken && this.state.points) {
+      //make a marker for each point displaying the weather on the map
       return (
         <ReactMapGL
           {...this.state.viewport}
           mapStyle={this.state.mapStyle}
           mapboxApiAccessToken={this.state.accessToken}
           onViewportChange={(viewport) => this.setState({viewport})}
-        />
+        >
+          {this.state.points.map((value, index) => {
+            return <Marker latitude={value.latitude} longitude={value.longitude} offsetLeft={-20} offsetTop={-20}>
+            <img src={value.weatherIcon} alt={value.weather} width={40} height={40}></img>
+            </Marker>
+          })}
+        </ReactMapGL>
       );
     }
     if (this.state.error) {
