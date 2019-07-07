@@ -4,10 +4,13 @@
 
 This app displays the weather of random points using Mapbox.  It will load the complete map after making requests to the backend api.
 
+###Requirements
+npm must be installed
+
 ###To run
 1. Setup the backend server and start it.  See the documentation for the backend-weather-api repository for how to do that.
 2. Open package.json.  Edit REACT_APP_WEATHER_BACKEND_URL='http://localhost:8080/' to ensure that it is pointing to your backend server.
-3. Run 'yarn start'.  You can access the frontend by going to http://localhost:3000/.
+3. Run 'npm start'.  You can access the frontend by going to http://localhost:3000/.
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -36,5 +39,5 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/tr
 ### Sources
 bootstrapped from https://github.com/facebook/create-react-app
 https://blog.mapbox.com/mapbox-gl-js-react-764da6cc074a
-Secret react keys uses backend:
+For secret react keys use a backend service:
 https://www.rockyourcode.com/secret-keys-in-react
