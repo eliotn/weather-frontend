@@ -30,14 +30,19 @@ export default class WeatherMap extends React.Component {
     });
   }
   componentDidMount() {
-    fetch("http://localhost:8080/v1/mapbox/secret")
+    console.log(process.env.REACT_APP_WEATHER_BACKEND_URL);
+    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/mapbox/secret")
       .then(res => res.json())
       .then(result => {
         console.log(result);
         this.setState({accessToken: result.value});
         
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({error : err})
       });
-    fetch("http://localhost:8080/v1/weather/randomLocations/1",
+    fetch(process.env.REACT_APP_WEATHER_BACKEND_URL + "/v1/weather/randomLocations/1",
     {headers: {
       "Accept": "application/json"
     }})
@@ -47,7 +52,11 @@ export default class WeatherMap extends React.Component {
           let {locations} = result;
           this._updatePointData({"type":"Point", "coordinates":[locations[0].latitude, locations[0].longitude]})
         }
-      );
+      )
+      .catch(err => {
+        console.log(err);
+        this.setState({error : err})
+      });
 
         
     
@@ -83,6 +92,9 @@ export default class WeatherMap extends React.Component {
           onViewportChange={(viewport) => this.setState({viewport})}
         />
       );
+    }
+    if (this.state.error) {
+      return (<p>There was an error in loading weather data.</p> );
     }
     return (<p>Loading weather data please be patient...</p> );
   }
